@@ -17,12 +17,11 @@ int main () {
         exit(EXIT_FAILURE);
     if (fstat(openFileDescriptor, &statBuffer) == -1)
         exit(EXIT_FAILURE);
-    fileSize = statBuffer.st_size;
 
-    if ((mapPointer = mmap(NULL, fileSize, PROT_READ|PROT_WRITE, MAP_SHARED, openFileDescriptor, 0)) == MAP_FAILED) {
-        printf("error");
+    fileSize = (int) statBuffer.st_size;
+
+    if ((mapPointer = mmap(NULL, fileSize, PROT_READ|PROT_WRITE, MAP_SHARED, openFileDescriptor, 0)) == MAP_FAILED)
         exit(EXIT_FAILURE);
-    }
 
     char tmp;
     for (int i=0; i < (fileSize-1)/2; i++) {
