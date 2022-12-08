@@ -1,28 +1,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-struct linkedNode {
+
+struct LinkedNode {
     int val;
-    struct linkedNode* next;
+    struct LinkedNode* next;
 };
 
-struct doublyLinkedNode {
+
+struct DoublyLinkedNode {
     int val;
-    struct doublyLinkedNode* prev;
-    struct doublyLinkedNode* next;
+    struct DoublyLinkedNode* prev;
+    struct DoublyLinkedNode* next;
 };
 
-struct linkedNode* initAscendingLinkedList(int n) {
+
+// Question 1
+
+struct LinkedNode* initAscendingLinkedList(int n) {
     if (!n)
         return NULL;
 
-    struct linkedNode* head = malloc(sizeof(struct linkedNode));
+    struct LinkedNode* head = malloc(sizeof(struct LinkedNode));
     head->val = 0;
 
-    struct linkedNode* currentNode = head;
+    struct LinkedNode* currentNode = head;
 
     for (int i=1; i<n; i++) {
-        currentNode->next = malloc(sizeof(struct linkedNode));
+        currentNode->next = malloc(sizeof(struct LinkedNode));
         currentNode = currentNode->next;
         currentNode->val = i;
     }
@@ -32,7 +37,10 @@ struct linkedNode* initAscendingLinkedList(int n) {
     return head;
 }
 
-int sizeOfLinkedList(struct linkedNode* head) {
+
+// Question 2
+
+int sizeOfLinkedList(struct LinkedNode* head) {
     int size = 0;
     while(head) {
         size++;
@@ -41,32 +49,41 @@ int sizeOfLinkedList(struct linkedNode* head) {
     return size;
 }
 
-void displayLinkedList(struct linkedNode* head) {
+
+// Question 3
+
+void displayLinkedList(struct LinkedNode* head) {
     while(head) {
         printf("%p: %d\n", head, head->val);
         head=head->next;
     }
 }
 
-struct linkedNode* removeHead(struct linkedNode** headPtr) {
+
+// Question 4
+
+struct LinkedNode* removeHead(struct LinkedNode** headPtr) {
     if (*headPtr == NULL)
         return NULL;
-    struct linkedNode* popedNode = *headPtr;
+    struct LinkedNode* poppedNode = *headPtr;
     *headPtr = (*headPtr)->next;
-    return popedNode;
+    return poppedNode;
 }
 
-struct linkedNode* removeTail(struct linkedNode** headPtr) {
+
+// Question 5
+
+struct LinkedNode* removeTail(struct LinkedNode** headPtr) {
     if (*headPtr == NULL)
         return NULL;
-    struct linkedNode* tmp1 = *headPtr;
+    struct LinkedNode* tmp1 = *headPtr;
     if ((*headPtr)->next == NULL) {
         (*headPtr) = NULL;
         return tmp1;
     }
     while(tmp1) {
         if (tmp1->next->next == NULL) {
-            struct linkedNode* tmp2 = tmp1->next;
+            struct LinkedNode* tmp2 = tmp1->next;
             tmp1->next = NULL;
             return tmp2;
         }
@@ -75,8 +92,11 @@ struct linkedNode* removeTail(struct linkedNode** headPtr) {
     return NULL;
 }
 
-void addHead(struct linkedNode** headPtr, int val) {
-    struct linkedNode* newHead = malloc(sizeof(struct linkedNode));
+
+// Question 6
+
+void addHead(struct LinkedNode** headPtr, int val) {
+    struct LinkedNode* newHead = malloc(sizeof(struct LinkedNode));
     newHead->val = val;
     if (*headPtr == NULL)
         newHead->next = NULL;
@@ -85,13 +105,16 @@ void addHead(struct linkedNode** headPtr, int val) {
     *headPtr = newHead;
 }
 
-void addTail(struct linkedNode** headPtr, int val) {
-    struct linkedNode* newTail = malloc(sizeof(struct linkedNode));
+
+// Question 7
+
+void addTail(struct LinkedNode** headPtr, int val) {
+    struct LinkedNode* newTail = malloc(sizeof(struct LinkedNode));
     newTail->val=val, newTail->next = NULL;
     if (*headPtr == NULL)
         *headPtr = newTail;
     else {
-        struct linkedNode* tmp = *headPtr;
+        struct LinkedNode* tmp = *headPtr;
         while(tmp) {
             if (tmp->next == NULL) {
                 tmp->next = newTail;
@@ -102,7 +125,10 @@ void addTail(struct linkedNode** headPtr, int val) {
     }
 }
 
-void concatLinkedList(struct linkedNode* baseHead, struct linkedNode* addedHead) {
+
+// Question 8
+
+void concatLinkedLists(struct LinkedNode* baseHead, struct LinkedNode* addedHead) {
     while (baseHead) {
         if (baseHead->next == NULL) {
             baseHead->next = addedHead;
@@ -112,30 +138,52 @@ void concatLinkedList(struct linkedNode* baseHead, struct linkedNode* addedHead)
     }
 }
 
-struct linkedNode* applyFunctionToLinkedList(struct linkedNode* head, int (*fun_ptr)(int)) {
-    struct linkedNode *newHead = malloc(sizeof(struct linkedNode)), *currentNode = newHead;
+
+// Question 9
+
+struct LinkedNode* applyFunctionToLinkedList(struct LinkedNode* head, int (*fun_ptr)(int)) {
+    struct LinkedNode *newHead = malloc(sizeof(struct LinkedNode)), *currentNode = newHead;
     while (head) {
         currentNode->val = fun_ptr(head->val);
         if (head->next == NULL)
             currentNode->next = NULL;
         else
-            currentNode->next = malloc(sizeof(struct linkedNode));
+            currentNode->next = malloc(sizeof(struct LinkedNode));
         currentNode=currentNode->next, head=head->next;
     }
     return newHead;
 }
 
-struct doublyLinkedNode* initAscendingCircularDoublyLinkedList(int n) {
+
+// Question 10
+
+struct DoublyLinkedNode* ConvertLinkedNodetoDoublyLinkedNode(struct LinkedNode* head) {
+    struct DoublyLinkedNode *newHead = malloc(sizeof(struct DoublyLinkedNode)), *currentNode = newHead;
+    while (head) {
+        currentNode->val = head->val;
+        if (head->next == NULL)
+            currentNode->next = NULL;
+        else
+            currentNode->next = malloc(sizeof(struct DoublyLinkedNode));
+        currentNode->next->prev = currentNode;
+        currentNode=currentNode->next, head=head->next;
+    }
+    return newHead;
+}
+
+// Question 11
+
+struct DoublyLinkedNode* initAscendingCircularDoublyLinkedList(int n) {
     if (!n)
         return NULL;
 
-    struct doublyLinkedNode* head = malloc(sizeof(struct doublyLinkedNode));
+    struct DoublyLinkedNode* head = malloc(sizeof(struct DoublyLinkedNode));
     head->val = 0;
 
-    struct doublyLinkedNode* currentNode = head;
+    struct DoublyLinkedNode* currentNode = head;
 
     for (int i=1; i<n; i++) {
-        currentNode->next = malloc(sizeof(struct doublyLinkedNode));
+        currentNode->next = malloc(sizeof(struct DoublyLinkedNode));
         currentNode->next->prev = currentNode;
         currentNode = currentNode->next;
         currentNode->val = i;
@@ -147,9 +195,9 @@ struct doublyLinkedNode* initAscendingCircularDoublyLinkedList(int n) {
     return head;
 }
 
-int sizeOfCircularDoublyLinkedList(struct doublyLinkedNode* head) {
+int sizeOfCircularDoublyLinkedList(struct DoublyLinkedNode* head) {
     int size = 0;
-    struct doublyLinkedNode* savedHead = head;
+    struct DoublyLinkedNode* savedHead = head;
     do {
         size++;
         head = head->next;
@@ -157,8 +205,8 @@ int sizeOfCircularDoublyLinkedList(struct doublyLinkedNode* head) {
     return size;
 }
 
-void displayCircularDoublyLinkedList(struct doublyLinkedNode* head) {
-    struct doublyLinkedNode* savedHead = head;
+void displayCircularDoublyLinkedList(struct DoublyLinkedNode* head) {
+    struct DoublyLinkedNode* savedHead = head;
     if (head!=NULL) {
         printf("%p: %d\n", head, head->val);
         head = head->next;
@@ -169,27 +217,27 @@ void displayCircularDoublyLinkedList(struct doublyLinkedNode* head) {
     }
 }
 
-struct doublyLinkedNode* removeCircularHead(struct doublyLinkedNode** headPtr) {
+struct DoublyLinkedNode* removeCircularHead(struct DoublyLinkedNode** headPtr) {
     if (*headPtr == NULL)
         return NULL;
-    struct doublyLinkedNode* popedNode = *headPtr;
+    struct DoublyLinkedNode* popedNode = *headPtr;
     (*headPtr)->prev->next = (*headPtr)->next;
     *headPtr = (*headPtr)->next;
     return popedNode;
 }
 
-struct doublyLinkedNode* removeCircularTail(struct doublyLinkedNode** headPtr) {
+struct DoublyLinkedNode* removeCircularTail(struct DoublyLinkedNode** headPtr) {
     if (*headPtr == NULL)
         return NULL;
-    struct doublyLinkedNode* tmp1 = *headPtr;
+    struct DoublyLinkedNode* tmp1 = *headPtr;
     if ((*headPtr)->next == *headPtr) {
         (*headPtr) = NULL;
         return tmp1;
     }
-    struct doublyLinkedNode* savedHead = *headPtr;
+    struct DoublyLinkedNode* savedHead = *headPtr;
     do {
         if (tmp1->next->next == savedHead) {
-            struct doublyLinkedNode* tmp2 = tmp1->next;
+            struct DoublyLinkedNode* tmp2 = tmp1->next;
             tmp1->next = savedHead;
             savedHead->prev = tmp1;
             return tmp2;
@@ -199,8 +247,8 @@ struct doublyLinkedNode* removeCircularTail(struct doublyLinkedNode** headPtr) {
     return NULL;
 }
 
-void addCircularHead(struct doublyLinkedNode** headPtr, int val) {
-    struct doublyLinkedNode* newHead = malloc(sizeof(struct doublyLinkedNode));
+void addCircularHead(struct DoublyLinkedNode** headPtr, int val) {
+    struct DoublyLinkedNode* newHead = malloc(sizeof(struct DoublyLinkedNode));
     newHead->val = val;
     if (*headPtr == NULL)
         newHead->next = newHead, newHead->prev=newHead;
@@ -210,15 +258,15 @@ void addCircularHead(struct doublyLinkedNode** headPtr, int val) {
     *headPtr = newHead;
 }
 
-void addCircularTail(struct doublyLinkedNode** headPtr, int val) {
-    struct doublyLinkedNode* newTail = malloc(sizeof(struct doublyLinkedNode));
+void addCircularTail(struct DoublyLinkedNode** headPtr, int val) {
+    struct DoublyLinkedNode* newTail = malloc(sizeof(struct DoublyLinkedNode));
     newTail->val=val;
     if (*headPtr == NULL) {
         *headPtr = newTail;
         newTail->next = newTail, newTail->prev = newTail;
     }
     else {
-        struct doublyLinkedNode *tmp = *headPtr, *savedHead = *headPtr;
+        struct DoublyLinkedNode *tmp = *headPtr, *savedHead = *headPtr;
         do {
             if (tmp->next == savedHead) {
                 tmp->next = newTail, newTail->prev = tmp;
@@ -230,8 +278,8 @@ void addCircularTail(struct doublyLinkedNode** headPtr, int val) {
     }
 }
 
-void concatCircularDoublyLinkedList(struct doublyLinkedNode* baseHead, struct doublyLinkedNode* addedHead) {
-    struct doublyLinkedNode *savedHead = baseHead;
+void concatCircularDoublyLinkedList(struct DoublyLinkedNode* baseHead, struct DoublyLinkedNode* addedHead) {
+    struct DoublyLinkedNode *savedHead = baseHead;
     do {
         if (baseHead->next == addedHead) {
             baseHead->next = savedHead, savedHead->prev = baseHead;
@@ -244,15 +292,15 @@ void concatCircularDoublyLinkedList(struct doublyLinkedNode* baseHead, struct do
     } while(baseHead != savedHead);
 }
 
-struct doublyLinkedNode* applyFunctionToCircularDoublyLinkedList(struct doublyLinkedNode* head, int (*fun_ptr)(int)) {
-    struct doublyLinkedNode *newHead = malloc(sizeof(struct doublyLinkedNode)), *currentNode = newHead, *savedHead = head;
+struct DoublyLinkedNode* applyFunctionToCircularDoublyLinkedList(struct DoublyLinkedNode* head, int (*fun_ptr)(int)) {
+    struct DoublyLinkedNode *newHead = malloc(sizeof(struct DoublyLinkedNode)), *currentNode = newHead, *savedHead = head;
     do {
         currentNode->val = fun_ptr(head->val);
         if (head->next == savedHead) {
             currentNode->next = newHead, newHead->prev = currentNode;
             break;
         }
-        currentNode->next = malloc(sizeof(struct doublyLinkedNode));
+        currentNode->next = malloc(sizeof(struct DoublyLinkedNode));
         currentNode->next->prev = currentNode, currentNode=currentNode->next, head=head->next;
     } while(head != savedHead);
     return newHead;

@@ -13,7 +13,7 @@ int main () {
     char* mapPointer;
     struct stat statBuffer;
 
-    if ((openFileDescriptor = open(fileName, O_RDWR, 0)) == -1)
+    if ((openFileDescriptor = open(fileName, O_RDWR, 0)) == -1) // Open for reading and writing
         exit(EXIT_FAILURE);
     if (fstat(openFileDescriptor, &statBuffer) == -1)
         exit(EXIT_FAILURE);
@@ -34,4 +34,5 @@ int main () {
         exit(EXIT_FAILURE);
 
     exit(EXIT_SUCCESS);
+    
 }

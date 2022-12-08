@@ -9,7 +9,6 @@ int globalVariable = 1;
 int uninitializedGlobalVariable;
 
 
-
 int main() {
 
     // Data
@@ -43,6 +42,8 @@ int main() {
     int *mmapExample = mmap(NULL, 5*sizeof(int), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
     printf("Mmap Address: %p\n", mmapExample);
 
+    // Get Memory Map
+
     int pid, status;
 
     pid = fork();
@@ -55,12 +56,11 @@ int main() {
 
         char* ppid = malloc(sizeof(int));
         sprintf(ppid, "%d", getppid());
-        execlp("/usr/bin/vmmap", "vmmap", ppid, (char *) NULL);
+        execlp("/usr/bin/vmmap", "vmmap", ppid, (char *) NULL); // MacOS specific command
         
         perror("execlp failed!");
         
     }
-    
 
     return EXIT_SUCCESS;
 }
