@@ -98,7 +98,7 @@ int main() {
     ptr->e = 10;
     printf("%ld", ptr->e);
     free_3is(ptr);
-    printf("%ld", ptr->e);
+    printf("A%ld", ptr->e);
     return EXIT_SUCCESS;
 }
 
