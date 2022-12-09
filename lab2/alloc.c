@@ -14,23 +14,31 @@ typedef struct HEADER_TAG {
 #define magicNumberSize sizeof(magicNumber)
 
 HEADER_TAG* freeMemoryBlockHead = NULL;
-size_t breakPtr;
+void* breakPtr = NULL;
 
 void* getFreeBlock(size_t memorySize) {
     if(!breakPtr)
-        breakPtr = (size_t) sbrk(0);
+        breakPtr = sbrk(0);
+    if (breakPtr == (void*) -1) {
+        printf("ERROR : SBRK FAILED");
+        exit(EXIT_FAILURE);
+    }
     HEADER_TAG* loopPtr = freeMemoryBlockHead;
     while (loopPtr != NULL) {
         if (loopPtr->bloc_size >= memorySize)
             return loopPtr;
         loopPtr = loopPtr->ptr_next;
     }
-    breakPtr = breakPtr + memorySize + headerTagSize + magicNumberSize;
-    return sbrk(breakPtr + memorySize + headerTagSize + magicNumberSize);
+    breakPtr = (void*) ((size_t)(breakPtr + memorySize + headerTagSize + magicNumberSize));
+    return sbrk((size_t)breakPtr + memorySize + headerTagSize + magicNumberSize);
 }
 
 void* malloc_3is(size_t memoryBlockSize ) {
     void* headerPtr = getFreeBlock(memoryBlockSize);
+    if (headerPtr == (void*) -1) {
+        printf("ERROR : SBRK FAILED");
+        exit(EXIT_FAILURE);
+    }
     ((HEADER_TAG*) headerPtr)->ptr_next = NULL, ((HEADER_TAG*) headerPtr)->bloc_size = memoryBlockSize, ((HEADER_TAG*) headerPtr)->magic_number = magicNumber;
     *((long*) (headerPtr + memoryBlockSize + headerTagSize)) = magicNumber;
     return headerPtr + headerTagSize;
