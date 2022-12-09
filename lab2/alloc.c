@@ -48,12 +48,14 @@ HEADER_TAG* getFreeBlock(size_t memorySize) {
 
 void* malloc_3is(size_t memoryBlockSize) {
     
-    HEADER_TAG* headerPtr = getFreeBlock(memoryBlockSize);
-    
+    void* headerPtr = getFreeBlock(memoryBlockSize);
+
+    HEADER_TAG* castedHeaderPtr = (HEADER_TAG*) headerPtr;
+
     // Initialization
-    headerPtr->ptr_next = NULL;
-    headerPtr->bloc_size = memoryBlockSize;
-    headerPtr->magic_number = magicNumber;
+    castedHeaderPtr->ptr_next = NULL;
+    castedHeaderPtr->bloc_size = memoryBlockSize;
+    castedHeaderPtr->magic_number = magicNumber;
 
     *((long*) (headerPtr + memoryBlockSize + headerTagSize)) = magicNumber;
 
@@ -88,17 +90,16 @@ void free_3is(void* memoryBlockPtr) {
 struct test {
     long a;
     long b;
-    long c;
     long d;
     long e;
 };
 
 int main() {
     struct test* ptr = malloc_3is(sizeof(struct test));
-    ptr->e = 10;
-    printf("%ld", ptr->e);
+    ptr->b = 10;
+    printf("%ld\n", ptr->b);
     free_3is(ptr);
-    printf("A%ld", ptr->e);
+    printf("%ld", freeMemoryBlockHead->bloc_size);
     return EXIT_SUCCESS;
 }
 
