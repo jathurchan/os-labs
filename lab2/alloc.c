@@ -11,6 +11,7 @@ typedef struct HEADER_TAG {
 #define magicNumber 0x01234568ABCDEF
 
 HEADER_TAG* freeMemoryBlockHead = NULL;
+void* breakPtr = sbrk(0);
 
 void* getFreeBlock(size_t memorySize) {
     HEADER_TAG* loopPtr = freeMemoryBlockHead;
@@ -19,16 +20,18 @@ void* getFreeBlock(size_t memorySize) {
             return loopPtr;
         loopPtr = loopPtr->ptr_next;
     }
-    return sbrk(sbrk(0) + memorySize + headerTagSize + magicNumberSize);
+    breakPtr = breakPtr + memorySize + headerTagSize + magicNumberSize;
+    return sbrk(breakPtr + memorySize + headerTagSize + magicNumberSize);
 }
 
-void* malloc_3is(size_t memorySize ) {
-    void* headerPtr = getFreeBlock(memorySize);
-    (*HEADER_TAG) *headerPtr= HEADER_TAG(NULL, memorySize, magicNumber);
-    (*magicNumber) *(headerPtr + memorySize + headerTagSize) = magicNumber;
+void* malloc_3is(size_t memoryBlockSize ) {
+    void* headerPtr = getFreeBlock(memoryBlockSize);
+    HEADER_TAG* castedHeaderPtr = (HEADER_TAG*) headerPtr;
+    *castedHeaderPtr = HEADER_TAG(NULL, memoryBlockSize, magicNumber);
+    (*magicNumber) *(headerPtr + memoryBlockSize + headerTagSize) = magicNumber;
     return headerPtr + headerTagSize;
 }
 
-void* free_3is(size_t memorySize) {
+void* free_3is(void* memoryBlockPtr) {
 
 }
