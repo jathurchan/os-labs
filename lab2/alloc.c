@@ -19,20 +19,10 @@ typedef struct HEADER_TAG {
 // ---- Global variables ----
 
 HEADER_TAG* freeMemoryBlockHead = NULL;
-void* breakPtr = NULL;
-
 
 // ---- Helper functions ----
 
 HEADER_TAG* getFreeBlock(size_t memorySize) {
-
-    if(!breakPtr)   // Initialize breakPtr
-        breakPtr = sbrk(0);
-
-    if (breakPtr == (void*) -1) {   // Not enough memory
-        printf("ERROR : SBRK AILED");
-        exit(EXIT_FAILURE);
-    }
 
     HEADER_TAG* currentPtr = freeMemoryBlockHead;
 
@@ -43,11 +33,10 @@ HEADER_TAG* getFreeBlock(size_t memorySize) {
     }
 
     // Extend allocated free memory
-    breakPtr = (void*) ((size_t)(breakPtr + memorySize + headerTagSize + magicNumberSize)); // update the stored value of break program
 
-    void* headerPtr = sbrk((size_t)breakPtr + memorySize + headerTagSize + magicNumberSize);
+    void* headerPtr = sbrk((size_t) memorySize + headerTagSize + magicNumberSize);
     if (headerPtr == (void*) -1) {  // Not enough memory
-        printf("ERROR : SBRK FAILED");
+        printf("ERROR : SBRK FAILED\n");
         exit(EXIT_FAILURE);
     }
 
@@ -92,10 +81,18 @@ void free_3is(void* memoryBlockPtr) {
     }
 }
 
+struct test {
+    long a;
+    long b;
+    long c;
+    long d;
+    long e;
+};
+
 int main() {
-    int* ptr = malloc_3is(sizeof(int));
-    *ptr = 5;
-    printf("%d", *ptr);
+    struct test* ptr = malloc_3is(sizeof(struct test));
+    ptr->e = 10;
+    printf("%ld", ptr->e);
     return EXIT_SUCCESS;
 }
 
