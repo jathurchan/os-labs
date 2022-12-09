@@ -16,7 +16,7 @@ void* breakPtr = sbrk(0);
 void* getFreeBlock(size_t memorySize) {
     HEADER_TAG* loopPtr = freeMemoryBlockHead;
     while (loopPtr != NULL) {
-        if (loopPtr->bloc_size >= memorySize)
+        if (loopPtr->bloc_size >= memorySize) :
             return loopPtr;
         loopPtr = loopPtr->ptr_next;
     }
@@ -33,5 +33,16 @@ void* malloc_3is(size_t memoryBlockSize ) {
 }
 
 void* free_3is(void* memoryBlockPtr) {
+    HEADER_TAG* headerPtr = (*HEADER_TAG) (memoryBlockPtr - headerTagSize);
+    magicNumber* magicNumberPtr = (magicNumber*) (memoryBlockPtr + headerPtr->bloc_size);
 
+    if (headerPtr->magic_number != magicNumber || *magicNumberPtr != magicNumber)
+        printf("WARNING : OUT OF BOUNCE");
+
+    HEADER_TAG* loopPtr = freeMemoryBlockHead;
+    while (loopPtr != NULL) && (loopPtr->ptr_next < headerPtr )
+        loopPtr = loopPtr->ptr_next;
+
+    loopPtr->ptr_next = headerPtr;
+    headerPtr->ptr_next = loopPtr->ptr_next;
 }
