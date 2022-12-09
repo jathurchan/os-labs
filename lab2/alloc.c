@@ -1,22 +1,27 @@
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+
 
 typedef struct HEADER_TAG {
     struct HEADER_TAG* ptr_next; // pointe sur le prochain bloc libre
     size_t bloc_size; // taille du memory bloc en octets
-    long magic_number; // 0x0123456789ABCDEFL
+    long magic_number; // 0x0123456789ABCDEF
 } HEADER_TAG;
 
 #define headerTagSize sizeof(HEADER_TAG)
-#define magicNumber 0x01234568ABCDEF
+#define magicNumber (long) 0x0123456789ABCDEF
 #define magicNumberSize sizeof(magicNumber)
 
 HEADER_TAG* freeMemoryBlockHead = NULL;
-void* breakPtr = sbrk(0);
+size_t breakPtr;
 
 void* getFreeBlock(size_t memorySize) {
+    if(!breakPtr)
+        breakPtr = (size_t) sbrk(0);
     HEADER_TAG* loopPtr = freeMemoryBlockHead;
     while (loopPtr != NULL) {
-        if (loopPtr->bloc_size >= memorySize) :
+        if (loopPtr->bloc_size >= memorySize)
             return loopPtr;
         loopPtr = loopPtr->ptr_next;
     }
@@ -26,21 +31,20 @@ void* getFreeBlock(size_t memorySize) {
 
 void* malloc_3is(size_t memoryBlockSize ) {
     void* headerPtr = getFreeBlock(memoryBlockSize);
-    HEADER_TAG* castedHeaderPtr = (HEADER_TAG*) headerPtr;
-    *castedHeaderPtr = HEADER_TAG(NULL, memoryBlockSize, magicNumber);
-    (*magicNumber) *(headerPtr + memoryBlockSize + headerTagSize) = magicNumber;
+    ((HEADER_TAG*) headerPtr)->ptr_next = NULL, ((HEADER_TAG*) headerPtr)->bloc_size = memoryBlockSize, ((HEADER_TAG*) headerPtr)->magic_number = magicNumber;
+    *((long*) (headerPtr + memoryBlockSize + headerTagSize)) = magicNumber;
     return headerPtr + headerTagSize;
 }
 
-void* free_3is(void* memoryBlockPtr) {
-    HEADER_TAG* headerPtr = (*HEADER_TAG) (memoryBlockPtr - headerTagSize);
-    magicNumber* magicNumberPtr = (magicNumber*) (memoryBlockPtr + headerPtr->bloc_size);
+void free_3is(void* memoryBlockPtr) {
+    HEADER_TAG* headerPtr = memoryBlockPtr - headerTagSize;
+    long* magicNumberPtr = memoryBlockPtr + headerPtr->bloc_size;
 
     if (headerPtr->magic_number != magicNumber || *magicNumberPtr != magicNumber)
         printf("WARNING : OUT OF BOUNCE");
 
     HEADER_TAG* loopPtr = freeMemoryBlockHead;
-    while (loopPtr != NULL) && (loopPtr->ptr_next < headerPtr )
+    while ((loopPtr != NULL) && (loopPtr->ptr_next < headerPtr))
         loopPtr = loopPtr->ptr_next;
 
     if (loopPtr == NULL) {
@@ -52,3 +56,8 @@ void* free_3is(void* memoryBlockPtr) {
         headerPtr->ptr_next = loopPtr->ptr_next;
     }
 }
+
+int main() {
+
+}
+
