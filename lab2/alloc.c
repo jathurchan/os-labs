@@ -7,8 +7,8 @@ typedef struct HEADER_TAG {
 } HEADER_TAG;
 
 #define headerTagSize sizeof(HEADER_TAG)
-#define magicNumberSize (size_t) 16
 #define magicNumber 0x01234568ABCDEF
+#define magicNumberSize sizeof(magicNumber)
 
 HEADER_TAG* freeMemoryBlockHead = NULL;
 void* breakPtr = sbrk(0);
@@ -43,6 +43,12 @@ void* free_3is(void* memoryBlockPtr) {
     while (loopPtr != NULL) && (loopPtr->ptr_next < headerPtr )
         loopPtr = loopPtr->ptr_next;
 
-    loopPtr->ptr_next = headerPtr;
-    headerPtr->ptr_next = loopPtr->ptr_next;
+    if (loopPtr == NULL) {
+        freeMemoryBlockHead = headerPtr;
+        headerPtr->ptr_next = NULL;
+    }
+    else {
+        loopPtr->ptr_next = headerPtr;
+        headerPtr->ptr_next = loopPtr->ptr_next;
+    }
 }
