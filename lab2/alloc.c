@@ -61,24 +61,28 @@ void* malloc_3is(size_t memoryBlockSize) {
 }
 
 void free_3is(void* memoryBlockPtr) {
+
     HEADER_TAG* headerPtr = memoryBlockPtr - headerTagSize;
     long* magicNumberPtr = memoryBlockPtr + headerPtr->bloc_size;
 
-    if (headerPtr->magic_number != magicNumber || *magicNumberPtr != magicNumber)
-        printf("WARNING : OUT OF BOUNCE");
+    if (headerPtr->magic_number != magicNumber || *magicNumberPtr != magicNumber) {
+        printf("WARNING : OUT OF BOUNDS\n");
+        exit(EXIT_FAILURE);
+    }
 
-    HEADER_TAG* loopPtr = freeMemoryBlockHead;
-    while ((loopPtr != NULL) && (loopPtr->ptr_next < headerPtr))
-        loopPtr = loopPtr->ptr_next;
+    HEADER_TAG* currentPtr = freeMemoryBlockHead;
+    while ((currentPtr != NULL) && (currentPtr->ptr_next != NULL) && (currentPtr->ptr_next < headerPtr))
+        currentPtr = currentPtr->ptr_next;
 
-    if (loopPtr == NULL) {
+    if (currentPtr == NULL) {   // No other free block
         freeMemoryBlockHead = headerPtr;
         headerPtr->ptr_next = NULL;
     }
     else {
-        loopPtr->ptr_next = headerPtr;
-        headerPtr->ptr_next = loopPtr->ptr_next;
+        headerPtr->ptr_next = currentPtr->ptr_next;
+        currentPtr->ptr_next = headerPtr;
     }
+
 }
 
 struct test {
@@ -92,6 +96,8 @@ struct test {
 int main() {
     struct test* ptr = malloc_3is(sizeof(struct test));
     ptr->e = 10;
+    printf("%ld", ptr->e);
+    free_3is(ptr);
     printf("%ld", ptr->e);
     return EXIT_SUCCESS;
 }
