@@ -27,13 +27,16 @@ HEADER_TAG* getFreeBlock(size_t memorySize) {
     HEADER_TAG* currentPtr = freeMemoryBlockHead;
 
     while (currentPtr != NULL) {
-        if (currentPtr->bloc_size >= memorySize)
+        if (currentPtr->bloc_size >= memorySize) {
+            if (currentPtr->bloc_size >= memorySize+headerTagSize+magicNumberSize+1) {
+                currentPtrcurrentPtr + memorySize + headerTagSize + magicNumberSize
+            }
             return currentPtr;
+        }
         currentPtr = currentPtr->ptr_next;
     }
 
     // Extend allocated free memory
-
     void* headerPtr = sbrk((size_t) memorySize + headerTagSize + magicNumberSize);
     if (headerPtr == (void*) -1) {  // Not enough memory
         printf("ERROR : SBRK FAILED\n");
