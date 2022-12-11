@@ -62,7 +62,7 @@ struct tosfs_dentry initDentry(void* mapPointer, int blockIndex) {
 }
 
 void initInodeCache(void* mapPointer) {
-	size_t offset = sizeof(tosfs_inode);
+	size_t offset = sizeof(struct tosfs_inode);
     for (int i = 1; i < inodeNumber+1; i++)
         initInode(mapPointer+i*offset, i);
 }
@@ -95,7 +95,7 @@ static int tosfs_stat(fuse_ino_t ino, struct stat *stbuf)
 	if (ino == in->inode) {
 		if (in->inode != 0) {
 			stbuf->st_ino = ino;
-			stbuf->st_utd = in->uid;
+			stbuf->st_uid = in->uid;
 			stbuf->st_gid = in->gid;
 			stbuf->st_mode = in->mode;
 			stbuf->st_blocks = 1;
@@ -103,7 +103,7 @@ static int tosfs_stat(fuse_ino_t ino, struct stat *stbuf)
 			stbuf->st_nlink = in->nlink;
 			return 0;
 		} else {
-			return -ENDENT;
+			return -ENOENT;
 		}
 	} else {
 		return -EIO;
@@ -118,9 +118,9 @@ static void tosfs_ll_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_in
 	int ret = tosfs_stat(ino, &stbuf);
 
 	if (ret == 0)
-		fuse_reply_err(req, &stbuf, 1.0);
+		fuse_reply_attr(req, &stbuf, 1.0);
 	else
-		fuse_reply_attr(req, -ret);
+		fuse_reply_err(req, -ret);
 }
 
 static void hello_ll_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
@@ -134,7 +134,7 @@ static void hello_ll_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 		e.ino = 2;
 		e.attr_timeout = 1.0;
 		e.entry_timeout = 1.0;
-		hello_stat(e.ino, &e.attr);
+        tosfs_stat(e.ino, &e.attr);
 
 		fuse_reply_entry(req, &e);
 	}
