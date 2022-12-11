@@ -21,7 +21,10 @@ static const char *hello_name = "hello";
 
 const char* fileSystem = "test_tosfs_files";
 int fileSize;
-int blockSize = 4096;
+struct tosfs_superblock superblock;
+struct tosfs_inode *inode_cache;
+int inodeNumber;
+int blockSize;
 
 
 void* mapFileSystem() {
@@ -49,13 +52,18 @@ struct tosfs_superblock initSuperblocks(void* mapPointer) {
 }
 
 struct tosfs_inode initInode(void* mapPointer, int blockIndex) {
-    struct tosfs_inode* inode = (struct tosfs_inode*) (mapPointer + blockSize + sizeof(struct tosfs_inode)*(blockIndex+1));
-    return *inode;
+    struct tosfs_inode* inodePtr = (struct tosfs_inode*) (mapPointer + blockSize + sizeof(struct tosfs_inode)*(blockIndex+1));
+    return *inodePtr;
 }
 
 struct tosfs_dentry initDentry(void* mapPointer, int blockIndex) {
-    struct tosfs_dentry* dentry = (struct tosfs_dentry*) (mapPointer + blockSize*2 + sizeof(struct tosfs_dentry)*blockIndex);
-    return *dentry;
+    struct tosfs_dentry* dentryPtr = (struct tosfs_dentry*) (mapPointer + blockSize*2 + sizeof(struct tosfs_dentry)*blockIndex);
+    return *dentryPtr;
+}
+
+void initInodeCache(void* mapPointer) {
+    for (int i = 0; i < inodeNumber+1; i++))
+        inode_cache
 }
 
 void displayFilesystemInfo(void* mapPointer) {
@@ -101,8 +109,7 @@ static int tosfs_stat(fuse_ino_t ino, struct stat *stbuf)
 	}
 }
 
-static void tosfs_ll_getattr(fuse_req_t req, fuse_ino_t ino,
-			     struct fuse_file_info *fi)
+static void tosfs_ll_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
 {
 	struct stat stbuf;
 	memset(&stbuf, 0, sizeof(stbuf));
@@ -203,7 +210,7 @@ static void hello_ll_read(fuse_req_t req, fuse_ino_t ino, size_t size,
 
 static struct fuse_lowlevel_ops hello_ll_oper = {
 	//.lookup		= hello_ll_lookup,
-	//.getattr	= hello_ll_getattr,
+	.getattr	= tosfs_ll_getattr,
 	//.readdir	= hello_ll_readdir,
 	//.open		= hello_ll_open,
 	//.read		= hello_ll_read,
@@ -238,5 +245,11 @@ int startFuse(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+
+    void* mapPointer = mapFileSystem();
+    superblock = initSuperblocks(mapPointer);
+    blockSize = superblock.block_size;
+    inodeNumber = superblock.inodes;
+    initInodeCache(mapPointer);
     startFuse(argc, argv);
 }
