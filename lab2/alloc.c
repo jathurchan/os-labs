@@ -29,22 +29,25 @@ HEADER_TAG* getFreeBlock(size_t memorySize) {
 
     HEADER_TAG* currentPtr = freeMemoryBlockHead;
 
-    if (currentPtr != NULL && currentPtr->ptr_next == NULL) {
-        if (currentPtr->bloc_size >= memorySize+headerTagSize+magicNumberSize+1) {
+    if (currentPtr != NULL && currentPtr->ptr_next == NULL) {   // Only 1 free block in the linked list?
+
+        if (currentPtr->bloc_size >= memorySize+headerTagSize+magicNumberSize+1) {  // Block large enough to be subdivided?
             HEADER_TAG* dividedHeaderPtr = (HEADER_TAG*) ((void*) currentPtr + memorySize + headerTagSize + magicNumberSize);
             dividedHeaderPtr->ptr_next = NULL;
             dividedHeaderPtr->bloc_size = currentPtr->bloc_size - memorySize - headerTagSize + magicNumberSize;
             freeMemoryBlockHead = dividedHeaderPtr;
             return currentPtr;
         }
-        else if (currentPtr->bloc_size >= memorySize) {
+        else if (currentPtr->bloc_size >= memorySize) { // Enough space to just use the memory block?
             freeMemoryBlockHead = NULL;
             return currentPtr;
         }
+
     }
 
-    while (currentPtr != NULL && currentPtr->ptr_next != NULL) {
-        if (currentPtr->ptr_next->bloc_size >= memorySize+headerTagSize+magicNumberSize+1) {
+    while (currentPtr != NULL && currentPtr->ptr_next != NULL) {    // At least 2 memory blocks in the linked list?
+
+        if (currentPtr->ptr_next->bloc_size >= memorySize+headerTagSize+magicNumberSize+1) {    // Memory block can be subdivided?
             HEADER_TAG* dividedHeaderPtr = (HEADER_TAG*) ((void*) (currentPtr->ptr_next) + memorySize + headerTagSize + magicNumberSize);
             HEADER_TAG* returnedPtr = currentPtr->ptr_next;
             dividedHeaderPtr->ptr_next = currentPtr->ptr_next->ptr_next;
@@ -52,15 +55,16 @@ HEADER_TAG* getFreeBlock(size_t memorySize) {
             currentPtr->ptr_next = dividedHeaderPtr;
             return returnedPtr;
         }
-        else if (currentPtr->ptr_next->bloc_size >= memorySize) {
+        else if (currentPtr->ptr_next->bloc_size >= memorySize) {   // Enough space to just use the memory block?
             HEADER_TAG* returnedPtr = currentPtr->ptr_next;
             currentPtr->ptr_next = currentPtr->ptr_next->ptr_next;
             return returnedPtr;
         }
+
         currentPtr = currentPtr->ptr_next;
     }
 
-    // Extend allocated free memory
+    // Extend allocated free memory (No memory block with enough space in the linked list)
     void* headerPtr = sbrk((size_t) memorySize + headerTagSize + magicNumberSize);
     if (headerPtr == (void*) -1) {  // Not enough memory
         printf("ERROR : SBRK FAILED\n");
@@ -98,7 +102,8 @@ void memoryPreallocation() {
     memoryPreallocated = true;
 }
 
-// ---- Malloc and Free ----
+
+// ---- Custom Malloc and Free Functions ----
 
 void* malloc_3is(size_t memoryBlockSize) {
 
