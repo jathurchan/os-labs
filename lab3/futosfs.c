@@ -13,9 +13,10 @@
 #include <unistd.h>
 #include <assert.h>
 
-
 const char* fileSystem = "test_tosfs_files";
 int fileSize;
+int blockSize = 4096;
+
 
 void* mapFileSystem() {
 
@@ -36,44 +37,49 @@ void* mapFileSystem() {
     return mapPointer;
 }
 
-struct tosfs_superblock initSuperblocks(int* castedPtr) {
-
-    struct tosfs_superblock superblock = {
-            .magic          = *(castedPtr),
-            .block_bitmap   = *(castedPtr + 1),
-            .inode_bitmap   = *(castedPtr + 2),
-            .block_size     = *(castedPtr + 3),
-            .blocks         = *(castedPtr + 4),
-            .inodes         = *(castedPtr + 5),
-            .root_inode     = *(castedPtr + 6)
-    };
-    return superblock;
+struct tosfs_superblock initSuperblocks(void* mapPointer) {
+    struct tosfs_superblock* superblockPtr = (struct tosfs_superblock*) mapPointer;
+    return *superblockPtr;
 }
 
-struct tosfs_inode initInode(short* shortCasterPtr, int* intCasterPtr, int i) {
-
-    struct tosfs_inode inode = {
-            .inode     = *(intCasterPtr + 1024 + i*5),
-            .block_no  = *(intCasterPtr + 1025 + i*5),
-            .uid       = *(shortCasterPtr + 2052 + i*10),
-            .gid       = *(shortCasterPtr + 2053 + i*10),
-            .mode      = *(shortCasterPtr + 2054 + i*10),
-            .perm      = *(shortCasterPtr + 2055 + i*10),
-            .size      = *(shortCasterPtr + 2056 + i*10),
-            .nlink     = *(shortCasterPtr + 2057 + i*10)
-    };
-    return inode;
+struct tosfs_inode initInode(void* mapPointer, int blockIndex) {
+    struct tosfs_inode* inode = (struct tosfs_inode*) (mapPointer + blockSize + sizeof(struct tosfs_inode)*(blockIndex+1));
+    return *inode;
 }
 
-struct tosfs_dentry initDentry(int* intCasterPtr, char* charCasterPtr, int numberBlock, int i) {
-
-    struct tosfs_dentry dentry = {
-            .inode  = *(intCasterPtr + 1024*numberBlock + 9*i),
-            .name   = (charCasterPtr + 4096*numberBlock + 4 + 36*i)
-    };
-    return dentry;
+struct tosfs_dentry initDentry(void* mapPointer, int blockIndex) {
+    struct tosfs_dentry* dentry = (struct tosfs_dentry*) (mapPointer + blockSize*2 + sizeof(struct tosfs_dentry)*blockIndex);
+    return *dentry;
 }
 
+void displayFilesystemInfo(void* mapPointer) {
+
+    struct tosfs_inode inode1 = initInode(mapPointer, 0);
+    struct tosfs_inode inode2 = initInode(mapPointer, 1);
+    struct tosfs_inode inode3 = initInode(mapPointer, 2);
+
+    struct tosfs_dentry dentry1 = initDentry(mapPointer, 0);
+    struct tosfs_dentry dentry2 = initDentry(mapPointer, 1);
+    struct tosfs_dentry dentry3 = initDentry(mapPointer, 2);
+    struct tosfs_dentry dentry4 = initDentry(mapPointer, 3);
+
+    printf("Superblock:\n   Magic number: %d  |  block bitmap: %d  |  inode bitmap: %d  |  block size: %d  \n   blocks number: %d  |  inodes number: %d  |  root inode: %d\n\n",
+           initSuperblocks(mapPointer).magic, initSuperblocks(mapPointer).block_bitmap,
+           initSuperblocks(mapPointer).inode_bitmap, initSuperblocks(mapPointer).block_size,
+           initSuperblocks(mapPointer).blocks, initSuperblocks(mapPointer).inodes,
+           initSuperblocks(mapPointer).root_inode);
+
+    for (int i = 0; i < 3; i++)
+        printf("Inode %d:\n   inode number: %d  |  block number: %d  |  user id: %d  |  group id: %d  \n   mode: %d  |  permissions: %d  |  size: %d  |  number of hardlink: %d\n\n",
+               i, initInode(mapPointer, i).inode, initInode(mapPointer, i).block_no, initInode(mapPointer, i).uid,
+               initInode(mapPointer, i).gid, initInode(mapPointer, i).mode, initInode(mapPointer, i).perm,
+               initInode(mapPointer, i).size, initInode(mapPointer, i).nlink);
+
+
+    for (int i = 0; i < 4; i++)
+        printf("Inode %d:\n   inode number: %d  |  name of file: %s\n\n",
+               i, initDentry(mapPointer, i).inode, initDentry(mapPointer, i).name);
+}
 
 /*static int futosfs_stat(fuse_ino_t ino, struct stat *stbuf)
 {
@@ -120,30 +126,7 @@ static struct fuse_lowlevel_ops futosfs_ll_oper = {
 int main(int argc, char *argv[])
 {
     void* mapPointer = mapFileSystem();
-    int* intCasterPtr = (int*) mapPointer;
-    short* shortCasterPtr = (short*) mapPointer;
-    char* charCasterPtr = (char*) mapPointer;
-
-    struct tosfs_superblock superblock = initSuperblocks(intCasterPtr);
-
-    struct tosfs_inode inode[superblock.inodes];
-    for (int i = 0; i<superblock.inodes; i++) {
-        inode[i] = initInode(shortCasterPtr, intCasterPtr, i + 1);
-    }
-    struct tosfs_dentry dentry = initDentry(intCasterPtr,charCasterPtr,inode[superblock.root_inode-1].block_no,0);
-    printf("%d\n", dentry.inode);
-    printf("%s\n", dentry.name);
-    struct tosfs_dentry dentry1 = initDentry(intCasterPtr,charCasterPtr,inode[superblock.root_inode-1].block_no,1);
-    printf("%d\n", dentry1.inode);
-    printf("%s\n", dentry1.name);
-    struct tosfs_dentry dentry2 = initDentry(intCasterPtr,charCasterPtr,inode[superblock.root_inode-1].block_no,2);
-    printf("%d\n", dentry2.inode);
-    printf("%s\n", dentry2.name);
-    struct tosfs_dentry dentry3 = initDentry(intCasterPtr,charCasterPtr,inode[superblock.root_inode-1].block_no,3);
-    printf("%d\n", dentry3.inode);
-    printf("%s\n", dentry3.name);
-    //for (int i = 2048; i<2100; i++)
-    //printf("%d\n",*(intCasterPtr+i));//*inode[superblock.root_inode-1].block_no);
+    displayFilesystemInfo(mapPointer);
 
     /*struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
     struct fuse_chan *ch;
