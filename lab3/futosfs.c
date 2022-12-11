@@ -62,8 +62,9 @@ struct tosfs_dentry initDentry(void* mapPointer, int blockIndex) {
 }
 
 void initInodeCache(void* mapPointer) {
-    for (int i = 0; i < inodeNumber+1; i++))
-        inode_cache
+	size_t offset = sizeof(tosfs_inode);
+    for (int i = 1; i < inodeNumber+1; i++)
+        initInode(mapPointer+i*offset, i);
 }
 
 void displayFilesystemInfo(void* mapPointer) {
