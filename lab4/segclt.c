@@ -6,7 +6,7 @@
 #include <sys/shm.h>
 #include <unistd.h>
 
-int semId, shmId, reqCount = 0, randSum = 0;
+int semId, shmId, reqCount = 0, randSum = 0, numLoop = 100000, numFork = 4;
 char *buf;
 struct sembuf sop;
 struct shmseg seg;
@@ -38,20 +38,27 @@ void loopClt() {
     acq_sem(semId, seg_dispo);
 
     initSeg();
+    acq_sem(semId, seg_init);
+
     wait_sem(semId, res_ok);
 
-    printf("Result Client: %ld\n", seg.result);
+    printf("Result Client %d: %ld\n", seg.pid, seg.result);
     lib_sem(semId, seg_init);
 
-    wait_sem(semId, res_ok);
+    acq_sem(semId, res_ok);
+    lib_sem(semId, res_ok);
 
     lib_sem(semId, seg_dispo);
 
-    printf("Result Server: %ld\n", seg.result);
+    printf("Result Server %d: %ld\n", seg.pid, seg.result);
 }
 
 int main() {
+    while(numFork--)
+        fork();
     initClt();
-    //while(1)
+    while(numLoop--)
         loopClt();
+    shmdt(buf);
+    exit(0);
 }
