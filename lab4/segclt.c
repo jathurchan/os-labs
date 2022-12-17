@@ -6,10 +6,18 @@
 #include <sys/shm.h>
 #include <unistd.h>
 
-int semId, shmId, reqCount = 0, randSum = 0, numLoop = 100000, numFork = 4;
-char *buf;
+
 struct sembuf sop;
 struct shmseg seg;
+
+
+// Global variables
+
+int semId, shmId, reqCount = 0, randSum = 0, numLoop = 100000, numFork = 4;
+char *buf;
+
+
+// Initialization
 
 void initClt() {
 
@@ -24,6 +32,9 @@ void initClt() {
 
     init_rand();
 }
+
+
+// Loop controlled by the counter
 
 void initSeg() {
     seg.pid = getpid();
@@ -42,7 +53,7 @@ void loopClt() {
 
     wait_sem(semId, res_ok);
 
-    printf("Result Client %d: %ld\n", seg.pid, seg.result);
+    printf("Client result %d: %ld\n", seg.pid, seg.result);
     lib_sem(semId, seg_init);
 
     acq_sem(semId, res_ok);
@@ -50,7 +61,7 @@ void loopClt() {
 
     lib_sem(semId, seg_dispo);
 
-    printf("Result Server %d: %ld\n", seg.pid, seg.result);
+    printf("Server result %d: %ld\n", seg.pid, seg.result);
 }
 
 int main() {
@@ -61,4 +72,41 @@ int main() {
         loopClt();
     shmdt(buf);
     exit(0);
+}
+
+
+// Custom implementations
+
+void wait_sem2(semid, sem) {
+    sop.sem_num = sem;
+    sop.sem_op = 0; // wait for 0
+    sop.sem_flg = 0;
+
+    if (semop(semid, &sop, 1) == -1) {
+        perror("semop");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void acq_sem2(semid, sem) {
+    sop.sem_num = sem;
+    sop.sem_flg = -1;   // acquire
+    sop.sem_flg = IPC_NOWAIT;
+
+    if (semop(semid, &sop, 1) == -1) {
+        perror("semop");
+        exit(EXIT_FAILURE);
+    }
+
+}
+
+void lib_sem2(semid, sem) {
+    sop.sem_num = sem;
+    sop.sem_flg = 1;   // release
+    sop.sem_flg = IPC_NOWAIT;
+
+    if (semop(semid, &sop, 1) == -1) {
+        perror("semop");
+        exit(EXIT_FAILURE);
+    }
 }
